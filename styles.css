@@ -1,0 +1,117 @@
+body * {
+    margin: 10px;
+    position: relative;
+    z-index: 1;
+}
+h1, h2, h3, th {
+    text-align: center;
+}
+br {
+    margin: 10px;
+    clear: both;
+}
+div#outerContainer {
+    width: 98%;
+    border-top: 1px solid black;
+    padding: 0px;
+}
+div#outerContainer > div {
+    float: left;
+}
+div.dropdown > p  {
+    margin: 18px 5px 0px 20px;
+    float: left;
+}
+div.dropdown > button {
+    margin: 10px 0px;
+    float: left;
+}
+.dropdown-menu * {
+    z-index: 1001;
+}
+ul.dropdown-menu > li {
+    padding: 5px;
+    background-color: white;
+}
+ul.dropdown-menu > li:hover {
+    background-color: lightblue;
+}
+#timelines * {
+    margin: 5px;
+}
+svg, .legend {
+    border: 1px solid black;
+    padding: 5px;
+    float: left;
+}
+div.legend > br {
+    margin: 0px;
+}
+td > button {
+    width: 30px;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+td > button > svg, td > svg {
+    margin: 0px -3px;
+    padding: 0px;
+    border: 0px none;
+}
+.ui-widget-header {
+    background: #1c94c4;
+    border: 1px solid #1c94c4;
+}
+.ui-state-default .ui-icon {
+    background-image: url("lib/jquery-ui-1.11.4/images/ui-icons_222222_256x240.png");
+}
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+	border: 1px solid grey;
+	background: white url("images/ui-bg_glass_100_fdf5ce_1x400.png") 50% 50% repeat-x;
+	font-weight: bold;
+	color: #c77405;
+}
+li {
+    list-style-type: none;
+    clear: both;
+}
+li > input {
+    margin-top: 15px;
+}
+li > * {
+    float: left;
+    vertical-align: middle;
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.axis text {
+    font-size: 9px;
+}
+.node {
+    stroke: black;
+    stroke-width: 1px;
+}
+g.node > line {
+    stroke-width: 2px;
+}
+.selected, g.selected > line {
+    stroke: lightgreen !important;
+    stroke-width: 3px !important;
+}
+g.selected > line {
+    opacity: 0.3 !important;
+}
+.invisible {
+    visibility: hidden;
+}
+.visible {
+    visibility: visible;
+}

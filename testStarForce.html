@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>StarForce</title>
+        
+        <style>
+            h1, h2 {
+                text-align: center;
+            }
+            ul {
+                list-style-position: inside;
+            }
+            
+            .node {
+                fill: #ccc;
+                stroke: #fff;
+                stroke-width: 2px;
+            }
+            .link {
+                stroke: #777;
+                stroke-width: 2px;
+            }
+            
+            
+            #target {
+                margin: 40px 0;
+            }
+            .wrapper {
+                position: relative;
+                display: inline-block;
+            }
+            .chart {
+                margin-bottom: 40px;
+            }
+            .star-title {
+                font-size: 14px;
+            }
+            .star-label {
+                font-size: 11px;
+                pointer-events: none;
+            }
+            .star-origin {
+                fill: #333;
+            }
+            .star-axis {
+                stroke: #ccc;
+                stroke-width: 2px;
+                stroke-dasharray: 4 5;
+            }
+            .star-path {
+                stroke: #444;
+                stroke-width: 2px;
+                fill: #709CB1;
+                fill-opacity: 0.6;
+            }
+            .star-interaction {
+                opacity: 0;
+            }
+            .interaction {
+                pointer-events: none;
+            }
+            .interaction.label {
+                position: absolute;
+                font-size: 11px;
+                text-shadow: 0 1px 0 #FFF, 0 -1px 0 #FFF, 1px 0 #FFF, -1px 0 #FFF;
+            }
+            .interaction.circle {
+                fill: #444;
+                fill-opacity: 0.6;
+                stroke: #444;
+            }
+        </style>
+        
+        <script src="lib/d3-3.4.6.min.js"></script>
+        <script src="lib/jquery-1.12.1.js"></script>
+        <link rel="stylesheet" href="lib/bootstrap-3.3.6.min.css">
+        <link rel="stylesheet" href="lib/bootstrap-3.3.6-theme.min.css">
+        <script src="lib/bootstrap-3.3.6.min.js"></script>
+        <script src="lib/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="lib/jquery-ui-1.11.4/jquery-ui.css">
+        <script src="lib/d3-star.js"></script>
+    </head>
+    
+    <body>
+        <h1>StarForce</h1>
+        
+        <script>
+            // SVG layout variables
+            var width = 800;
+            var height = 600;
+            var innerPadding = 20;
+            var outerPadding = 20;
+            
+            
+            // Starplot layout variables
+            var starMargin = {
+                    top: 32,
+                    right: 50,
+                    bottom: 20,
+                    left: 50
+                };
+            var starWidth = 150 - starMargin.left - starMargin.right;
+            var starHeight = 150 - starMargin.top - starMargin.bottom;
+            var starLabelMargin = 8;
+            var starScaleFactor = 25;
+            
+            // Fake data
+            var rawData = [
+                {
+                    id: 0,
+                    pid: "p0",
+                    to: "p6",
+                    region: "arabic",
+                    variables: { Var1: 19, Var2: 31, Var3: 1, Var4: 9, Var5: 36 }
+                },
+                {
+                    id: 1,
+                    pid: "p1",
+                    to: "p0",
+                    region: "arabic",
+                    variables: { Var1: 92, Var2: 36, Var3: 74, Var4: 7, Var5: 23 }
+                },
+                {
+                    id: 2,
+                    pid: "p2",
+                    to: "p5",
+                    region: "arabic",
+                    variables: { Var1: 78, Var2: 48, Var3: 70, Var4: 65, Var5: 14 }
+                },
+                {
+                    id: 3,
+                    pid: "p3",
+                    to: "p6",
+                    region: "arabic",
+                    variables: { Var1: 38, Var2: 28, Var3: 57, Var4: 43, Var5: 38 }
+                },
+                {
+                    id: 4,
+                    pid: "p4",
+                    to: "p10",
+                    region: "arabic",
+                    variables: { Var1: 45, Var2: 31, Var3: 30, Var4: 75, Var5: 58 }
+                },
+                {
+                    id: 5,
+                    pid: "p5",
+                    to: "p6",
+                    region: "russian",
+                    variables: { Var1: 86, Var2: 11, Var3: 93, Var4: 34, Var5: 62 }
+                },
+                {
+                    id: 6,
+                    pid: "p6",
+                    to: "p0",
+                    region: "russian",
+                    variables: { Var1: 17, Var2: 5, Var3: 96, Var4: 75, Var5: 74 }
+                },
+                {
+                    id: 7,
+                    pid: "p7",
+                    to: "p2",
+                    region: "russian",
+                    variables: { Var1: 59, Var2: 34, Var3: 65, Var4: 7, Var5: 55 }
+                },
+                {
+                    id: 8,
+                    pid: "p8",
+                    to: "p9",
+                    region: "russian",
+                    variables: { Var1: 99, Var2: 91, Var3: 22, Var4: 68, Var5: 5 }
+                },
+                {
+                    id: 9,
+                    pid: "p9",
+                    to: "p2",
+                    region: "french",
+                    variables: { Var1: 53, Var2: 14, Var3: 37, Var4: 71, Var5: 30 }
+                },
+                {
+                    id: 10,
+                    pid: "p10",
+                    to: "p5",
+                    region: "french",
+                    variables: { Var1: 59, Var2: 60, Var3: 92, Var4: 98, Var5: 67 }
+                },
+                {
+                    id: 11,
+                    pid: "p11",
+                    to: "p9",
+                    region: "french",
+                    variables: { Var1: 62, Var2: 1, Var3: 11, Var4: 96, Var5: 84 }
+                },
+                {
+                    id: 12,
+                    pid: "p12",
+                    to: "p3",
+                    region: "french",
+                    variables: { Var1: 78, Var2: 59, Var3: 38, Var4: 78, Var5: 7 }
+                },
+                {
+                    id: 13,
+                    pid: "p13",
+                    to: "p4",
+                    region: "urdu",
+                    variables: { Var1: 32, Var2: 22, Var3: 16, Var4: 14, Var5: 18 }
+                },
+                {
+                    id: 14,
+                    pid: "p14",
+                    to: "p3",
+                    region: "pashto",
+                    variables: { Var1: 76, Var2: 88, Var3: 91, Var4: 35, Var5: 53 }
+                },
+                {
+                    id: 15,
+                    pid: "p15",
+                    to: "p1",
+                    region: "pashto",
+                    variables: { Var1: 0, Var2: 0, Var3: 0, Var4: 0, Var5: 0 }
+                },
+                {
+                    id: 16,
+                    pid: "p16",
+                    to: "p1",
+                    region: "pashto",
+                    variables: { Var1: 100, Var2: 100, Var3: 100, Var4: 100, Var5: 100 }
+                }
+            ];
+            
+            // Determine who talks with who and how many regions are in the data
+            var talksWith = [];
+            var inRegionWith = [];
+            var regions = [];
+            var weightScale = 3;
+            var i;
+            for (i = 0; i < rawData.length; i++) {
+                var id = rawData[i].id;
+                var to = Number(rawData[i].to.slice(1, rawData[i].to.length));
+                
+                var alreadyLinked = false;
+                var j;
+                for (j = 0; j < talksWith.length; j++) {
+                    if ((talksWith[j].source == id && talksWith[j].target == to) ||
+                        (talksWith[j].source == to && talksWith[j].target == id)) {
+                            talksWith[j].weight++;
+                            alreadyLinked = true;
+                            break;
+                        }
+                }
+                if (!alreadyLinked) {
+                    talksWith.push({ source: id, target: to, weight: weightScale, visible: true});
+                }
+                
+                var k;
+                for (k = 0; k < rawData.length && i > k; k++) {
+                    var id2 = rawData[k].id;
+                    if (rawData[i].region == rawData[k].region) {
+                        var alreadyInRegionWith = false;
+                        for (j = 0; j < inRegionWith.length; j++) {
+                            if ((inRegionWith[j].source == id && inRegionWith[j].target == id2) ||
+                                (inRegionWith[j].source == id2 && inRegionWith[j].target == id)) {
+                                    alreadyInRegionWith = true;
+                                    break;
+                                }
+                        }
+                        if (!alreadyInRegionWith) {
+                            inRegionWith.push({ source: id, target: id2, weight: 1, visible: false})
+                        }
+                    }
+                }
+                
+                if (regions.indexOf(rawData[i].region) < 0) {
+                    regions.push(rawData[i].region);
+                }
+            }
+            
+            var links = talksWith.concat(inRegionWith);
+            
+            // Dynamically determine region color scale
+            var regionColors;
+            if (regions.length <= 10) {
+                regionColors = d3.scale.category10();
+            }
+            else {
+                regionColors = d3.scale.category20();
+            }
+
+            var row = d3.select("body").append("div")
+                .attr("class", "container-fluid")
+                .style("margin", "20px")
+                .append("div")
+                .attr("class", "row");
+
+            // Force layout SVG
+            var svg = row.append('div')
+                .attr("class", "col-md-8")
+                .append("svg")
+                .attr("class", "col-md-12")
+                .attr('height', height)
+                .style("border", "1px solid black")
+                .call(d3.behavior.zoom().on("zoom", function () {
+                    svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
+                }))
+                .append("g");
+            
+            // Force layout
+            var force = d3.layout.force()
+                .charge(-300)
+                .linkDistance(function(d) {
+                    if (d.visible) {
+                        return 100/Math.pow(2,d.weight-weightScale+1);
+                    }
+                    else {
+                        return 150;
+                    }
+                 })
+                .size([width, height])
+                .nodes(rawData)
+                .links(links);
+
+            // Links in the force layout
+            var link = svg.selectAll('.link')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'link');
+
+            // Nodes (starplots) and div for the information for a clicked node
+            var infoDiv = row.append("div")
+                .attr("class", "col-md-4")
+                .append("div")
+                .attr("class", "col-md-12")
+                .style("border", "1px solid black");
+            infoDiv.append("h2").text("Node Data");
+            
+            var node = svg.selectAll('.node')
+                .data(rawData)
+                .enter()
+                    .append('g')
+                    .attr('class', 'wrapper')
+                    .attr("id", function(d) { return d.id + "-star"; });
+//                    .call(force.drag());
+                    
+            // When the force layout first starts, create a starplot for each node
+            force.on("start", function() {
+                node.each(function(d, i) {
+                    createStarPlot(d, d3.select(node[0][i]));
+                })
+            });
+                   
+            // On each tick, determine how the nodes/starplots and links should
+            // be displayed
+            force.on('tick', function() {
+                
+                // Move the nodes/starplots so that their centerpoint are at the
+                // correct location in the force layout
+                node.attr("transform", function(d) {
+                        var conversationCounts = getConversationCountsFor(d);
+                        var sWidth = conversationCounts*starScaleFactor + starMargin.left + starMargin.right;
+                        var sHeight = conversationCounts*starScaleFactor + starMargin.top + starMargin.bottom;
+                        return "translate(" + (d.x-sWidth/2) + "," + (d.y-sHeight/2-starLabelMargin) + ")";
+                    });
+                    
+                // Move the links, determine whether the link should be invisible,
+                // and dynamically determine the width of the link
+                link.attr('x1', function(d) { return d.source.x; })
+                    .attr('y1', function(d) { return d.source.y; })
+                    .attr('x2', function(d) { return d.target.x; })
+                    .attr('y2', function(d) { return d.target.y; })
+                    .attr("opacity", function(d) {
+                        if (d.visible) {
+                            return 1;
+                        }
+                        else {
+                            return 0;
+                        }
+                    })
+                    .style("stroke-width", function(d) { return 1.5*(d.weight-weightScale+1); });
+            });
+            
+            // Make the force layout start
+            force.start();
+            
+            // Create a test starplot
+            // This should eventually be removed
+            createStarPlot(rawData[0], d3.select("body").append("svg")
+                .attr("class", "wrapper")
+                .attr("width", 300)
+                .attr("height", 300));
+                        
+            // Function to create a starplot at a given location using a single
+            // data point
+            function createStarPlot(data, location) {
+                // Lowest/Highest property values
+                var propertyMin = 0;
+                var propertyMax = 100;
+
+                // Create a scale based on the lowest/highest property values
+                var starScale = d3.scale.linear()
+                    .domain([propertyMin, propertyMax])
+                    .range([0, 100]);
+
+                // Determine the dimentions of the starplot based on the weighted
+                // indegree for this node
+                var conversationCounts = getConversationCountsFor(data);
+                var sWidth = conversationCounts*starScaleFactor + starMargin.left + starMargin.right;
+                var sHeight = conversationCounts*starScaleFactor + starMargin.top + starMargin.bottom;
+
+                // Get an array for all the keys for the variables of the data point
+                var variableKeys = Object.keys(data.variables);
+
+                // Create the starplot
+                var star = d3.starPlot()
+                    .width(sWidth - starMargin.left - starMargin.right)
+                    .properties(variableKeys)
+                    .scales(starScale)
+                    .labels(variableKeys)
+                    .margin(starMargin)
+                    .labelMargin(starLabelMargin)
+                    .includeLabels(false);
+
+                // If the given location is clicked, show info on the data point
+                location.on("click", function() {
+                        infoDiv.selectAll("*").remove();
+                        infoDiv.append("h2").text("Node Data");
+                        infoDiv.append("h3").text("Info on data file " + data.id);
+                        infoDiv.append("p").text("Conversation: " + data.pid + " talking to " + data.to);
+                        infoDiv.append("p").text("Region: " + data.region)
+                        
+                        var list = infoDiv.append("ul").text("Variables");
+                        for (i = 0; i < variableKeys.length; i++) {
+                            list.append("li").text(data.variables[variableKeys[i]]);
+                        }
+                    });
+
+                // Create an inner SVG for some starplot elements
+                var svg2 = location.append('svg')
+                    .attr('class', 'chart')
+                    .attr('width', sWidth)
+                    .attr('height', sHeight);
+
+                // Create a G element where the starplot will live
+                var starG = location.append("g")
+                    .attr('class', 'chart')
+                    .attr('width', sWidth)
+                    .attr('height', sHeight)
+                    .datum(data.variables)
+                    .call(star)
+                    .call(star.interaction);
+                
+                // Create a tooltip that will be dynamically adjusted
+                var tooltip = location.append("title");
+
+                // Create a circle for mouseover events to help show the data
+                // variable being moused over
+                var circle = svg2.append('circle')
+                    .attr('class', 'interaction circle')
+                    .attr('r', 5);
+
+                // Hide all elements with an interaction class so that they are
+                // not distracting
+                var interaction = location.selectAll('.interaction')
+                    .style('display', 'none');
+
+                // Dynamically determine the color of the starplot based on the
+                // region the data is from and the opacity based on the
+                // conversation counts
+                location.selectAll(".star-path")
+                    .style("stroke", regionColors(data.region))
+                    .style("fill", regionColors(data.region))
+                    .style("fill-opacity", conversationCounts/5);
+                    
+
+                // When moused over, hide all labels, show the interaction
+                // circle, determine the circle's location, and determine
+                // the tooltip text
+                location.selectAll('.star-interaction')
+                    .on('mouseover', function(d) {
+                        svg2.selectAll('.star-label').style('display', 'none');
+                        interaction.style('display', 'block');
+                        circle.attr('cx', d.x)
+                            .attr('cy', d.y);
+                        tooltip.text(d.key + ": " + d.datum[d.key]);
+                    })
+                    // When mouseout occures, hide all interaction elements,
+                    // show labels, and remove tooltip text
+                    .on('mouseout', function(d) {
+                        interaction.style('display', 'none');
+                        svg2.selectAll('.star-label').style('display', 'block');
+                        tooltip.text("");
+                    });
+            }
+            
+            // A helper function to determine the weighted indegree of a given
+            // data point
+            function getConversationCountsFor(dataPoint) {
+                var conversationCounts = 0;
+                for (i = 0; i < talksWith.length; i++) {
+                    if (talksWith[i].visible &&
+                        (talksWith[i].source == dataPoint ||
+                        talksWith[i].target == dataPoint)) {
+                        conversationCounts += talksWith[i].weight-weightScale+1;
+                    }
+                }
+                return conversationCounts;
+            }
+        </script>
+    </body>
+</html>
